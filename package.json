@@ -1,0 +1,27 @@
+{
+  "name": "ultimate-street-food-finder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo for Street Food Finder - React Native + Node.js",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:api": "pnpm --filter @ultimate-sf/api dev",
+    "dev:mobile": "pnpm --filter @ultimate-sf/mobile dev",
+    "typecheck": "pnpm --recursive typecheck",
+    "build": "pnpm --recursive build",
+    "clean": "pnpm --recursive clean && rm -rf node_modules"
+  },
+  "keywords": [
+    "monorepo",
+    "react-native",
+    "expo",
+    "nodejs",
+    "express",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
