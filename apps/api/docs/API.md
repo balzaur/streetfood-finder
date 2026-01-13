@@ -12,14 +12,7 @@ http://localhost:4000
 
 ```json
 {
-  "data": { ... },
-  "meta": {
-    "pagination": {
-      "limit": 50,
-      "offset": 0,
-      "total": 100
-    }
-  }
+  "data": { ... }
 }
 ```
 
@@ -28,216 +21,100 @@ http://localhost:4000
 ```json
 {
   "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Validation failed",
-    "details": { ... }
+    "code": "ERROR_CODE",
+    "message": "Error description"
   }
 }
 ```
 
 ## Error Codes
 
-| Code                  | HTTP Status | Description               |
-| --------------------- | ----------- | ------------------------- |
-| `VALIDATION_ERROR`    | 400         | Request validation failed |
-| `BAD_REQUEST`         | 400         | Invalid request           |
-| `UNAUTHORIZED`        | 401         | Authentication required   |
-| `FORBIDDEN`           | 403         | Insufficient permissions  |
-| `NOT_FOUND`           | 404         | Resource not found        |
-| `CONFLICT`            | 409         | Resource conflict         |
-| `INTERNAL_ERROR`      | 500         | Internal server error     |
-| `NOT_IMPLEMENTED`     | 501         | Feature not implemented   |
-| `SERVICE_UNAVAILABLE` | 503         | Service unavailable       |
+| Code               | HTTP Status | Description               |
+| ------------------ | ----------- | ------------------------- |
+| `VALIDATION_ERROR` | 400         | Request validation failed |
+| `BAD_REQUEST`      | 400         | Invalid request           |
+| `UNAUTHORIZED`     | 401         | Authentication required   |
+| `FORBIDDEN`        | 403         | Insufficient permissions  |
+| `NOT_FOUND`        | 404         | Resource not found        |
+| `CONFLICT`         | 409         | Resource conflict         |
+| `INTERNAL_ERROR`   | 500         | Internal server error     |
 
 ---
 
 ## Authentication
 
-This API uses Firebase Authentication for user identity verification (optional). When configured, include the Firebase ID token in requests:
+This API uses **Supabase Auth exclusively** with JWT verification. All authenticated endpoints require a valid Supabase JWT token:
 
 ```
-Authorization: Bearer <firebase-id-token>
+Authorization: Bearer <supabase-jwt>
 ```
 
-If Firebase is not configured, authentication endpoints will return `501 Not Implemented`.
+See [AUTH.md](./AUTH.md) for complete authentication flow documentation.
 
 ---
 
 ## Endpoints
 
-### 1. Users
+### Health Check
 
-#### 1.1 Facebook Login (Create or Get User)
+#### Get Health Status
 
-Creates a new user via Facebook login or returns existing user (idempotent).
-
-**Endpoint:** `POST /api/v1/users/facebook`
-
-**Request Body:**
-
-```json
-{
-  "name": "Juan Dela Cruz",
-  "provider": "facebook",
-  "provider_user_id": "fb_123456",
-  "provider_email": "juan@email.com"
-}
-```
-
-**Response (201 Created - New User):**
-
-```json
-{
-  "data": {
-    "user": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "name": "Juan Dela Cruz",
-      "created_at": "2026-01-09T10:00:00.000Z",
-      "updated_at": "2026-01-09T10:00:00.000Z"
-    },
-    "identity": {
-      "id": "660e8400-e29b-41d4-a716-446655440000",
-      "user_id": "550e8400-e29b-41d4-a716-446655440000",
-      "provider": "facebook",
-      "provider_user_id": "fb_123456",
-      "provider_email": "juan@email.com",
-      "created_at": "2026-01-09T10:00:00.000Z",
-      "updated_at": "2026-01-09T10:00:00.000Z"
-    }
-  }
-}
-```
-
-**Response (200 OK - Existing User):**
-
-```json
-{
-  "data": {
-    "user": { ... },
-    "identity": { ... }
-  }
-}
-```
-
----
-
-#### 1.2 Get User by ID
-
-Retrieves a specific user by ID.
-
-**Endpoint:** `GET /api/v1/users/:id`
+**Endpoint:** `GET /health`
 
 **Response (200 OK):**
 
 ```json
 {
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Juan Dela Cruz",
-    "created_at": "2026-01-09T10:00:00.000Z",
-    "updated_at": "2026-01-09T10:00:00.000Z"
-  }
+  "status": "ok",
+  "timestamp": "2026-01-13T15:16:18.854Z",
+  "environment": "development"
 }
 ```
 
-**Error Responses:**
-
-- `404 Not Found` - User not found
-
 ---
 
-#### 1.3 Get All Users
+### Vendors (Public)
 
-Retrieves all users with optional pagination.
+#### Get All Vendors
 
-**Endpoint:** `GET /api/v1/users`
+Retrieves all available food vendors. This is mock data and does not require authentication.
 
-**Query Parameters:**
-
-- `limit` (optional): Number of users to return (default: 50, max: 200)
-- `offset` (optional): Number of users to skip (default: 0)
-
-**Example:** `GET /api/v1/users?limit=20&offset=0`
+**Endpoint:** `GET /api/v1/vendors`
 
 **Response (200 OK):**
 
 ```json
-{
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "name": "Juan Dela Cruz",
-      "created_at": "2026-01-09T10:00:00.000Z",
-      "updated_at": "2026-01-09T10:00:00.000Z"
-    }
-  ],
-  "meta": {
-    "pagination": {
-      "limit": 20,
-      "offset": 0,
-      "total": 150
-    }
+[
+  {
+    "id": "1",
+    "name": "Taco Fiesta Truck",
+    "cuisine": "Mexican",
+    "area": "Downtown",
+    "rating": 4.8,
+    "isOpen": true,
+    "priceRange": "$$",
+    "description": "Authentic Mexican tacos with fresh ingredients",
+    "photoUrl": "https://images.unsplash.com/photo-1565299507177-b0ac66763828"
   }
-}
+]
 ```
 
 ---
 
-#### 1.4 Update User
+### Business (Authenticated)
 
-Updates user information (name only).
+All business endpoints require authentication with a valid Supabase JWT token.
 
-**Endpoint:** `POST /api/v1/users/:id`
+#### Create Business
 
-**Request Body:**
+**Endpoint:** `POST /api/v1/business`
 
-```json
-{
-  "name": "Juan P. Dela Cruz"
-}
+**Headers:**
+
 ```
-
-**Response (200 OK):**
-
-```json
-{
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Juan P. Dela Cruz",
-    "created_at": "2026-01-09T10:00:00.000Z",
-    "updated_at": "2026-01-09T10:30:00.000Z"
-  }
-}
+Authorization: Bearer <supabase-jwt>
+Content-Type: application/json
 ```
-
-**Error Responses:**
-
-- `400 Bad Request` - Validation error
-- `404 Not Found` - User not found
-
----
-
-#### 1.5 Delete User
-
-Deletes a user and all related data (business, menu, identities).
-
-**Endpoint:** `DELETE /api/v1/users/:id`
-
-**Response (204 No Content)**
-
-**Error Responses:**
-
-- `404 Not Found` - User not found
-
----
-
-### 2. Business
-
-#### 2.1 Create Business
-
-Creates a business for a specific user.
-
-**Endpoint:** `POST /api/v1/users/:userId/business`
 
 **Request Body:**
 
@@ -251,14 +128,6 @@ Creates a business for a specific user.
 }
 ```
 
-**Field Validations:**
-
-- `name` (required): 1-255 characters
-- `description` (optional): Max 1000 characters
-- `image` (optional): Valid URL
-- `longitude` (required): -180 to 180
-- `latitude` (required): -90 to 90
-
 **Response (201 Created):**
 
 ```json
@@ -271,24 +140,21 @@ Creates a business for a specific user.
     "image": "https://example.com/storefront.jpg",
     "longitude": 121.0244,
     "latitude": 14.5547,
-    "created_at": "2026-01-09T11:00:00.000Z",
-    "updated_at": "2026-01-09T11:00:00.000Z"
+    "created_at": "2026-01-13T11:00:00.000Z",
+    "updated_at": "2026-01-13T11:00:00.000Z"
   }
 }
 ```
 
-**Error Responses:**
+#### Get My Businesses
 
-- `400 Bad Request` - Validation error
-- `404 Not Found` - User not found
+**Endpoint:** `GET /api/v1/business`
 
----
+**Headers:**
 
-#### 2.2 Get Businesses for User
-
-Retrieves all businesses owned by a specific user.
-
-**Endpoint:** `GET /api/v1/users/:userId/business`
+```
+Authorization: Bearer <supabase-jwt>
+```
 
 **Response (200 OK):**
 
@@ -299,99 +165,88 @@ Retrieves all businesses owned by a specific user.
       "id": "770e8400-e29b-41d4-a716-446655440000",
       "user_id": "550e8400-e29b-41d4-a716-446655440000",
       "name": "Tito's Taco Stand",
-      "description": "Best tacos in Manila!",
-      "image": "https://example.com/storefront.jpg",
-      "longitude": 121.0244,
-      "latitude": 14.5547,
-      "created_at": "2026-01-09T11:00:00.000Z",
-      "updated_at": "2026-01-09T11:00:00.000Z"
+      "created_at": "2026-01-13T11:00:00.000Z",
+      "updated_at": "2026-01-13T11:00:00.000Z"
     }
   ]
 }
 ```
 
----
+#### Get Single Business
 
-#### 2.3 Update Business
+**Endpoint:** `GET /api/v1/business/:businessId`
 
-Updates business information (ownership check enforced).
+**Headers:**
 
-**Endpoint:** `POST /api/v1/users/:userId/business/:businessId`
+```
+Authorization: Bearer <supabase-jwt>
+```
+
+#### Update Business
+
+**Endpoint:** `PUT /api/v1/business/:businessId`
+
+**Headers:**
+
+```
+Authorization: Bearer <supabase-jwt>
+Content-Type: application/json
+```
 
 **Request Body (all fields optional):**
 
 ```json
 {
-  "name": "Tito's Amazing Taco Stand",
-  "description": "The best tacos in all of Manila!",
-  "image": "https://example.com/new-storefront.jpg",
+  "name": "Updated Name",
+  "description": "Updated description",
+  "image": "https://example.com/new-image.jpg",
   "longitude": 121.025,
   "latitude": 14.555
 }
 ```
 
-**Response (200 OK):**
+#### Delete Business
 
-```json
-{
-  "data": {
-    "id": "770e8400-e29b-41d4-a716-446655440000",
-    "user_id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Tito's Amazing Taco Stand",
-    "description": "The best tacos in all of Manila!",
-    "image": "https://example.com/new-storefront.jpg",
-    "longitude": 121.025,
-    "latitude": 14.555,
-    "created_at": "2026-01-09T11:00:00.000Z",
-    "updated_at": "2026-01-09T11:30:00.000Z"
-  }
-}
+**Endpoint:** `DELETE /api/v1/business/:businessId`
+
+**Headers:**
+
 ```
-
-**Error Responses:**
-
-- `400 Bad Request` - Validation error
-- `404 Not Found` - Business not found or doesn't belong to user
-
----
-
-#### 2.4 Delete Business
-
-Deletes a business (ownership check enforced).
-
-**Endpoint:** `DELETE /api/v1/users/:userId/business/:businessId`
+Authorization: Bearer <supabase-jwt>
+```
 
 **Response (204 No Content)**
 
-**Error Responses:**
-
-- `404 Not Found` - Business not found or doesn't belong to user
-
 ---
 
-### 3. Menu
+### Menu (Authenticated)
 
-#### 3.1 Create Menu with Images
+All menu endpoints require authentication with a valid Supabase JWT token.
 
-Creates a menu for a business with image uploads.
+#### Create Menu
 
 **Endpoint:** `POST /api/v1/business/:businessId/menu`
 
-**Content-Type:** `multipart/form-data`
+**Headers:**
+
+```
+Authorization: Bearer <supabase-jwt>
+Content-Type: multipart/form-data
+```
 
 **Form Fields:**
 
-- `menu` (text, required): Menu description/text
-- `images` (files, required): 1-3 image files (max 5MB each)
+- `menu` (text, required): Menu description/items
+- `images` (files): 1-3 image files (max 5MB each)
 
-**Example using cURL:**
+**Example:**
 
 ```bash
-curl -X POST http://localhost:4000/api/v1/business/:businessId/menu \
+curl -X POST http://localhost:4000/api/v1/business/<businessId>/menu \
+  -H "Authorization: Bearer <your-jwt-token>" \
   -F "menu=Beef Taco - $5, Chicken Taco - $4" \
   -F "images=@taco1.jpg" \
-  -F "images=@taco2.jpg" \
-  -F "images=@taco3.jpg"
+  -F "images=@taco2.jpg"
 ```
 
 **Response (201 Created):**
@@ -403,334 +258,96 @@ curl -X POST http://localhost:4000/api/v1/business/:businessId/menu \
     "business_id": "770e8400-e29b-41d4-a716-446655440000",
     "menu": "Beef Taco - $5, Chicken Taco - $4",
     "images": [
-      "https://livjafablrkxszdfrsrb.supabase.co/storage/v1/object/public/menu-images/menu/1736419200000-taco1.jpg",
-      "https://livjafablrkxszdfrsrb.supabase.co/storage/v1/object/public/menu-images/menu/1736419200001-taco2.jpg",
-      "https://livjafablrkxszdfrsrb.supabase.co/storage/v1/object/public/menu-images/menu/1736419200002-taco3.jpg"
+      "https://livjafablrkxszdfrsrb.supabase.co/storage/v1/object/public/menu-images/..."
     ],
-    "created_at": "2026-01-09T12:00:00.000Z",
-    "updated_at": "2026-01-09T12:00:00.000Z"
+    "created_at": "2026-01-13T12:00:00.000Z",
+    "updated_at": "2026-01-13T12:00:00.000Z"
   }
 }
 ```
 
-**Error Responses:**
-
-- `400 Bad Request` - Validation error (missing menu text, no images, >3 images, non-image files)
-- `404 Not Found` - Business not found
-
----
-
-#### 3.2 Get Menus for Business
-
-Retrieves all menus for a specific business.
+#### Get Menus
 
 **Endpoint:** `GET /api/v1/business/:businessId/menu`
 
-**Response (200 OK):**
+**Headers:**
 
-```json
-{
-  "data": [
-    {
-      "id": "880e8400-e29b-41d4-a716-446655440000",
-      "business_id": "770e8400-e29b-41d4-a716-446655440000",
-      "menu": "Beef Taco - $5, Chicken Taco - $4",
-      "images": [
-        "https://livjafablrkxszdfrsrb.supabase.co/storage/v1/object/public/menu-images/menu/1736419200000-taco1.jpg",
-        "https://livjafablrkxszdfrsrb.supabase.co/storage/v1/object/public/menu-images/menu/1736419200001-taco2.jpg"
-      ],
-      "created_at": "2026-01-09T12:00:00.000Z",
-      "updated_at": "2026-01-09T12:00:00.000Z"
-    }
-  ]
-}
+```
+Authorization: Bearer <supabase-jwt>
 ```
 
----
-
-#### 3.3 Update Menu
-
-Updates menu text and/or replaces images. Old images are deleted when new ones are uploaded.
+#### Update Menu
 
 **Endpoint:** `POST /api/v1/business/:businessId/menu/:menuId`
 
-**Content-Type:** `multipart/form-data`
+**Headers:**
 
-**Form Fields (all optional, but at least one required):**
+```
+Authorization: Bearer <supabase-jwt>
+Content-Type: multipart/form-data
+```
+
+**Form Fields (at least one required):**
 
 - `menu` (text): Updated menu description
-- `images` (files): New images (1-3 files, max 5MB each)
+- `images` (files): New images (1-3 files)
 
-**Example using cURL:**
-
-```bash
-curl -X POST http://localhost:4000/api/v1/business/:businessId/menu/:menuId \
-  -F "menu=Beef Taco - $6, Chicken Taco - $5, Fish Taco - $7" \
-  -F "images=@new-taco1.jpg"
-```
-
-**Response (200 OK):**
-
-```json
-{
-  "data": {
-    "id": "880e8400-e29b-41d4-a716-446655440000",
-    "business_id": "770e8400-e29b-41d4-a716-446655440000",
-    "menu": "Beef Taco - $6, Chicken Taco - $5, Fish Taco - $7",
-    "images": [
-      "https://livjafablrkxszdfrsrb.supabase.co/storage/v1/object/public/menu-images/menu/1736422800000-new-taco1.jpg"
-    ],
-    "created_at": "2026-01-09T12:00:00.000Z",
-    "updated_at": "2026-01-09T13:00:00.000Z"
-  }
-}
-```
-
-**Error Responses:**
-
-- `400 Bad Request` - Validation error (no updates provided, >3 images)
-- `404 Not Found` - Menu not found or doesn't belong to business
-
----
-
-#### 3.4 Delete Menu
-
-Deletes a menu and all associated images.
+#### Delete Menu
 
 **Endpoint:** `DELETE /api/v1/business/:businessId/menu/:menuId`
 
-**Response (204 No Content)**
-
-**Error Responses:**
-
-- `404 Not Found` - Menu not found or doesn't belong to business
-
----
-
-### 4. User Identities
-
-#### 4.1 Create User Identity
-
-Creates a user identity record for Facebook authentication. Optionally verifies Firebase ID token if configured.
-
-**Endpoint:** `POST /api/v1/user-identities`
-
-**Headers (optional):**
+**Headers:**
 
 ```
-Authorization: Bearer <firebase-id-token>
+Authorization: Bearer <supabase-jwt>
 ```
-
-**Request Body:**
-
-```json
-{
-  "user_id": "550e8400-e29b-41d4-a716-446655440000",
-  "provider_user_id": "fb_123456",
-  "provider_email": "juan@email.com"
-}
-```
-
-**Response (201 Created):**
-
-```json
-{
-  "data": {
-    "id": "990e8400-e29b-41d4-a716-446655440000",
-    "user_id": "550e8400-e29b-41d4-a716-446655440000",
-    "provider": "facebook",
-    "provider_user_id": "fb_123456",
-    "provider_email": "juan@email.com",
-    "created_at": "2026-01-09T14:00:00.000Z",
-    "updated_at": "2026-01-09T14:00:00.000Z"
-  }
-}
-```
-
-**Error Responses:**
-
-- `400 Bad Request` - Validation error
-- `401 Unauthorized` - Invalid or mismatched Firebase token
-- `404 Not Found` - User not found
-- `501 Not Implemented` - Firebase authentication not configured
-
----
-
-#### 4.2 Delete User Identity
-
-Deletes a user identity record.
-
-**Endpoint:** `DELETE /api/v1/user-identities/:id`
 
 **Response (204 No Content)**
-
-**Error Responses:**
-
-- `404 Not Found` - User identity not found
-
----
-
-## Image Upload Specifications
-
-### Menu Images
-
-- **Bucket:** `menu-images` (Supabase Storage)
-- **Max files:** 3 per menu
-- **Max size:** 5MB per file
-- **Accepted formats:** All image MIME types (image/\*)
-- **Storage path:** `menu/{timestamp}-{filename}`
-
-### Upload Behavior
-
-- Images are uploaded to Supabase Storage before database records are created
-- If database insert fails, uploaded images are automatically cleaned up
-- When updating with new images, old images are deleted
-- When deleting a menu, all associated images are deleted
-
----
-
-## Environment Variables
-
-Required environment variables (see `.env.example`):
-
-```env
-# Server Configuration
-PORT=4000
-NODE_ENV=development
-CORS_ORIGIN=*
-
-# Supabase Configuration
-SUPABASE_URL=https://livjafablrkxszdfrsrb.supabase.co
-SUPABASE_ANON_KEY=sb_publishable_XvH7ZAQKm1L6iVpbtnvp3A_62qjdA0w
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# Supabase Storage
-SUPABASE_STORAGE_BUCKET_MENU_IMAGES=menu-images
-
-# Firebase Authentication (Optional)
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY=
-```
 
 ---
 
 ## Database Schema
 
-For complete database design, entity relationships, and table details, see [Backend Database Architecture](./backend-database-architecture.md).
+### Profiles Table
 
-**Quick reference - Four core tables:**
-
-- `users` - User accounts for vendors
-- `business` - Street food vendor businesses with geolocation
-- `menu` - Menu items with images (max 3 per menu)
-- `user_identities` - OAuth provider identities (Facebook, future: Google, Apple)
-
----
-
-## Testing with cURL
-
-### 1. Create User via Facebook
-
-```bash
-curl -X POST http://localhost:4000/api/v1/users/facebook \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Juan Dela Cruz",
-    "provider": "facebook",
-    "provider_user_id": "fb_123456",
-    "provider_email": "juan@email.com"
-  }'
+```sql
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id),
+  name VARCHAR NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
-### 2. Create Business
+### Business Table
 
-```bash
-curl -X POST http://localhost:4000/api/v1/users/{userId}/business \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Titos Taco Stand",
-    "description": "Best tacos in Manila!",
-    "longitude": 121.0244,
-    "latitude": 14.5547
-  }'
+```sql
+CREATE TABLE business (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name VARCHAR NOT NULL,
+  description TEXT,
+  image TEXT,
+  longitude DOUBLE PRECISION NOT NULL,
+  latitude DOUBLE PRECISION NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
-### 3. Create Menu with Images
+### Menu Table
 
-```bash
-curl -X POST http://localhost:4000/api/v1/business/{businessId}/menu \
-  -F "menu=Beef Taco - $5, Chicken Taco - $4" \
-  -F "images=@/path/to/image1.jpg" \
-  -F "images=@/path/to/image2.jpg"
-```
-
-### 4. Get All Users
-
-```bash
-curl http://localhost:4000/api/v1/users?limit=10&offset=0
+```sql
+CREATE TABLE menu (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id UUID NOT NULL REFERENCES business(id) ON DELETE CASCADE,
+  menu TEXT NOT NULL,
+  images TEXT[] NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
 ---
 
-## Architecture Overview
-
-### Request Flow
-
-```
-Request → Routes → Middleware (Validation) → Controller → Service → Database
-```
-
-**For detailed architecture, layer responsibilities, and design patterns**, see [Backend Tech Stack Documentation](./backend-tech-stack.md#layered-architecture-with-separation-of-concerns).
-
-### API Standards
-
-- **Error Handling**: Consistent error codes and HTTP status mapping (see Error Codes section above)
-- **Input Validation**: Zod schemas validate all requests
-- **Security**: Helmet headers, CORS, JWT support, Supabase RLS
-- **Response Format**: All responses follow consistent JSON structure with `data` and `meta` fields
-
----
-
-## Development
-
-### Start Development Server
-
-```bash
-cd apps/api
-pnpm dev
-```
-
-### Environment Setup
-
-1. Copy `.env.example` to `.env`
-2. Update `SUPABASE_SERVICE_ROLE_KEY` with your actual key
-3. (Optional) Configure Firebase credentials for authentication
-
-### Type Checking
-
-```bash
-pnpm typecheck
-```
-
-### Build for Production
-
-```bash
-pnpm build
-pnpm start
-```
-
----
-
-## Production Considerations
-
-1. **Rate Limiting**: Implement rate limiting middleware (already installed: `express-rate-limit`)
-2. **Authentication**: Add proper JWT/session-based authentication
-3. **Logging**: Add structured logging (Winston, Pino)
-4. **Monitoring**: Add APM and error tracking (Sentry, New Relic)
-5. **Database**: Configure Supabase RLS policies
-6. **Storage**: Set up proper Supabase Storage bucket policies
-7. **CORS**: Restrict CORS to specific origins in production
-8. **SSL/TLS**: Use HTTPS in production
-9. **Validation**: Additional business rule validation
-10. **Testing**: Add unit and integration tests (Jest, Vitest, Supertest)
+Built with ❤️ using Node.js, Express, TypeScript, and Supabase

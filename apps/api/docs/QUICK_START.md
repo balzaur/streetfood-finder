@@ -18,21 +18,21 @@
 In your Supabase SQL Editor, run the following SQL to create the required tables:
 
 ```sql
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Users table (REMOVED - now using Supabase Auth's auth.users)
+-- This table is no longer needed
 
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Profiles table (links to auth.users)
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   name VARCHAR NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Business table
+-- Business table (references profiles instead of users)
 CREATE TABLE IF NOT EXISTS business (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   name VARCHAR NOT NULL,
   description TEXT,
   image TEXT,
@@ -52,23 +52,12 @@ CREATE TABLE IF NOT EXISTS menu (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- User identities table
-CREATE TABLE IF NOT EXISTS user_identities (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  provider TEXT NOT NULL,
-  provider_user_id TEXT NOT NULL,
-  provider_email TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(provider, provider_user_id)
-);
+-- User identities table (REMOVED - OAuth identities now managed by Supabase Auth)
+-- This table is no longer needed
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_business_user_id ON business(user_id);
 CREATE INDEX IF NOT EXISTS idx_menu_business_id ON menu(business_id);
-CREATE INDEX IF NOT EXISTS idx_user_identities_user_id ON user_identities(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_identities_provider ON user_identities(provider, provider_user_id);
 ```
 
 ### Create Storage Bucket
@@ -134,10 +123,12 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 # Supabase Storage
 SUPABASE_STORAGE_BUCKET_MENU_IMAGES=menu-images
 
-# Firebase Authentication (Optional - leave empty for now)
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY=
+# Supabase Configuration (Mandatory)
+
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_JWT_SECRET=your-jwt-secret
 ```
 
 ## Step 4: Install Dependencies
@@ -264,7 +255,7 @@ cd packages/shared && pnpm build
 ## Next Steps
 
 1. **Read the full documentation**: [docs/API.md](./docs/API.md)
-2. **Configure Firebase** (optional): For user identity verification
+2. **Understand authentication**: [docs/AUTH.md](./docs/AUTH.md)
 3. **Add rate limiting**: Uncomment rate limiting code in production
 4. **Set up monitoring**: Add logging and error tracking
 5. **Write tests**: Add unit and integration tests
@@ -301,23 +292,18 @@ Before deploying to production:
 
 ## API Endpoint Summary
 
-| Method | Endpoint                                     | Description                    |
-| ------ | -------------------------------------------- | ------------------------------ |
-| GET    | `/health`                                    | Health check                   |
-| POST   | `/api/v1/users/facebook`                     | Create/login user via Facebook |
-| GET    | `/api/v1/users`                              | List all users (paginated)     |
-| GET    | `/api/v1/users/:id`                          | Get user by ID                 |
-| POST   | `/api/v1/users/:id`                          | Update user                    |
-| DELETE | `/api/v1/users/:id`                          | Delete user                    |
-| POST   | `/api/v1/users/:userId/business`             | Create business                |
-| GET    | `/api/v1/users/:userId/business`             | Get user's businesses          |
-| POST   | `/api/v1/users/:userId/business/:businessId` | Update business                |
-| DELETE | `/api/v1/users/:userId/business/:businessId` | Delete business                |
-| POST   | `/api/v1/business/:businessId/menu`          | Create menu with images        |
-| GET    | `/api/v1/business/:businessId/menu`          | Get business menus             |
-| POST   | `/api/v1/business/:businessId/menu/:menuId`  | Update menu                    |
-| DELETE | `/api/v1/business/:businessId/menu/:menuId`  | Delete menu                    |
-| POST   | `/api/v1/user-identities`                    | Create user identity           |
-| DELETE | `/api/v1/user-identities/:id`                | Delete user identity           |
+| Method | Endpoint                                    | Auth | Description             |
+| ------ | ------------------------------------------- | ---- | ----------------------- |
+| GET    | `/health`                                   | No   | Health check            |
+| GET    | `/api/v1/vendors`                           | No   | Get all vendors         |
+| POST   | `/api/v1/business`                          | Yes  | Create business         |
+| GET    | `/api/v1/business`                          | Yes  | Get my businesses       |
+| GET    | `/api/v1/business/:businessId`              | Yes  | Get single business     |
+| PUT    | `/api/v1/business/:businessId`              | Yes  | Update business         |
+| DELETE | `/api/v1/business/:businessId`              | Yes  | Delete business         |
+| POST   | `/api/v1/business/:businessId/menu`         | Yes  | Create menu with images |
+| GET    | `/api/v1/business/:businessId/menu`         | Yes  | Get business menus      |
+| POST   | `/api/v1/business/:businessId/menu/:menuId` | Yes  | Update menu             |
+| DELETE | `/api/v1/business/:businessId/menu/:menuId` | Yes  | Delete menu             |
 
 For detailed request/response examples, see [docs/API.md](./docs/API.md).

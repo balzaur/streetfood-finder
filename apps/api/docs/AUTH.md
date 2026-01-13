@@ -269,6 +269,8 @@ curl -X POST http://localhost:4000/api/v1/business \
 
 ## Migration from Firebase
 
+**Historical Reference Only** - This section is kept for reference if you're maintaining code that previously used Firebase. The backend has been completely migrated to Supabase Auth.
+
 **Removed:**
 
 - `src/lib/firebase.ts` - Firebase Admin SDK initialization
@@ -304,3 +306,11 @@ curl -X POST http://localhost:4000/api/v1/business \
 - Verify business belongs to authenticated user
 - Check `user_id` matches `req.userId`
 - Review ownership checks in service layer
+
+## Related Documentation
+
+- [Backend Architecture](./ARCHITECTURE.md) - System design and layer responsibilities
+- [Database Schema](./DATABASE.md) - Detailed data models and relationships
+- [Security Practices](./SECURITY.md) - Security measures and best practices
+- [API Endpoints](./API.md) - RESTful endpoint reference
+- [Setup Guide](./QUICK_START.md) - Installation and configuration

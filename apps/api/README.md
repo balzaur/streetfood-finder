@@ -2,7 +2,7 @@
 
 Production-grade RESTful API built with Node.js, Express, TypeScript, and Supabase.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (5 Minutes)
 
 ### Prerequisites
 
@@ -10,337 +10,191 @@ Production-grade RESTful API built with Node.js, Express, TypeScript, and Supaba
 - pnpm 8+
 - Supabase account
 
-### Installation
+### Setup
 
 ```bash
-# Install dependencies (from monorepo root)
+# Install dependencies
 pnpm install
 
-# Navigate to API directory
-cd apps/api
-
-# Copy environment variables
+# Copy environment file
 cp .env.example .env
 
-# Update .env with your Supabase credentials
-```
-
-### Environment Configuration
-
-Edit `.env` and update:
-
-```env
+# Edit .env with your Supabase credentials
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-SUPABASE_JWT_SECRET=your-jwt-secret
 ```
 
-**Note:** Firebase is NO LONGER USED. All authentication is handled by Supabase Auth.
-
-### Run Development Server
+### Run
 
 ```bash
 pnpm dev
 ```
 
-Server will start at `http://localhost:4000`
+API runs at `http://localhost:4000`
 
-### Verify Installation
+### Verify
 
 ```bash
 curl http://localhost:4000/health
 ```
 
-Expected response:
-
-```json
-{
-  "data": {
-    "status": "ok",
-    "timestamp": "2026-01-09T10:00:00.000Z"
-  }
-}
-```
+For detailed setup: [docs/QUICK_START.md](./docs/QUICK_START.md)
 
 ## 📖 Documentation
 
-### For Users
+### Essential Guides
 
-Comprehensive API documentation is available in [docs/API.md](./docs/API.md)
+- **[API Endpoints](./docs/API.md)** - All endpoints with examples
+- **[Authentication](./docs/AUTH.md)** - Supabase Auth & JWT tokens
+- **[Architecture](./docs/ARCHITECTURE.md)** - System design & patterns
+- **[Database](./docs/DATABASE.md)** - Schema & data models
+- **[Security](./docs/SECURITY.md)** - Security measures & checklist
+- **[Setup](./docs/QUICK_START.md)** - Installation & database configuration
 
-**Quick Links:**
+### Optional Guides
 
-- [Endpoints](./docs/API.md#endpoints)
-- [Authentication](./docs/AUTH.md) - **NEW: Supabase Auth Flow**
-- [Error Codes](./docs/API.md#error-codes)
-- [Testing with cURL](./docs/API.md#testing-with-curl)
-- [Database Schema](./docs/API.md#database-schema)
-
-### For Developers
-
-Backend architecture and technical documentation for onboarding engineers:
-
-- **[Authentication Architecture](./docs/AUTH.md)** - **NEW: How Supabase Auth works, JWT verification, profile management**
-- **[Backend Database Architecture](./docs/backend-database-architecture.md)** - Database design philosophy, table relationships, security considerations, and scalability approach
-- **[Backend Tech Stack & Libraries](./docs/backend-tech-stack.md)** - Detailed explanation of technologies, libraries, folder structure, and architectural decisions
-
-**New to the project?** Start with the [Quick Start Guide](./docs/QUICK_START.md)
+- **[Testing](./docs/TESTING.md)** - Testing strategies & examples
+- **[Deployment](./docs/DEPLOYMENT.md)** - Production deployment
 
 ## 🏗️ Architecture
 
-### Clean Architecture Pattern
+**Layered Design**: Routes → Middleware → Controllers → Services → Database
 
 ```
-HTTP Request → Auth Middleware → Routes → Controllers → Services → Supabase
+HTTP Request
+    ↓
+Auth Middleware (verify JWT)
+    ↓
+Route Handler
+    ↓
+Controller (parse request)
+    ↓
+Service (business logic)
+    ↓
+Supabase (PostgreSQL)
 ```
-
-**Key Changes:**
-
-- **Auth Middleware**: Verifies Supabase JWTs on all protected routes
-- **No Firebase**: Firebase Admin SDK completely removed
-- **Profile Management**: Backend ensures profiles exist for authenticated users
 
 ### Project Structure
 
 ```
 src/
-├── app.ts                    # Express app configuration
-├── server.ts                 # Server entry point
-├── config/
-│   └── env.ts               # Environment variables & validation
-├── controllers/             # HTTP request handlers
-│   ├── users.controller.ts
-│   ├── business.controller.ts
-│   ├── menu.controller.ts
-│   └── user-identities.controller.ts
-├── services/                # Business logic & database operations
-│   ├── users.service.ts
-│   ├── business.service.ts
-│   ├── menu.service.ts
-│   └── user-identities.service.ts
-├── routes/                  # API route definitions
-│   ├── index.ts
-│   ├── users.routes.ts
-│   ├── business.routes.ts
-│   ├── menu.routes.ts
-│   └── user-identities.routes.ts
-├── middlewares/             # Express middleware
-│   ├── error.middleware.ts
-│   ├── async-handler.ts
-│   └── validate.middleware.ts
-├── validators/              # Zod schemas for validation
-│   └── index.ts
-├── utils/                   # Utility functions
-│   ├── api-response.ts
-│   └── http-errors.ts
-└── lib/                     # External service clients
-    ├── supabase.ts
-    └── firebase.ts
+├── app.ts                 Express app setup
+├── server.ts              Server entry point
+├── config/env.ts          Environment & validation
+├── controllers/           HTTP handlers
+├── services/              Business logic & database
+├── routes/                Route definitions
+├── middlewares/           Express middleware
+├── validators/            Zod schemas
+├── utils/                 Helper functions
+└── lib/supabase.ts        Supabase client
 ```
 
-## 🔑 Key Features
+## 🔑 Features
 
-### ✅ Implemented
+- ✅ **Supabase Auth** - JWT verification, profile management
+- ✅ **Business Management** - CRUD with authentication
+- ✅ **Menu Management** - Items with multi-image uploads
+- ✅ **File Uploads** - Multer + Supabase Storage
+- ✅ **Input Validation** - Zod schemas
+- ✅ **Error Handling** - Centralized middleware
+- ✅ **Type Safety** - Full TypeScript coverage
+- ✅ **Security** - Helmet, CORS, ownership verification
 
-- **Users Management** - Facebook login, CRUD operations
-- **Business Management** - Create, read, update, delete businesses with geolocation
-- **Menu Management** - Menus with multi-image uploads (max 3 images)
-- **User Identities** - OAuth provider identity management
-- **File Uploads** - Multer + Supabase Storage integration
-- **Input Validation** - Zod schemas with detailed error messages
-- **Error Handling** - Centralized error middleware with typed errors
-- **Response Formatting** - Consistent API response structure
-- **Pagination** - Query-based pagination for list endpoints
-- **Type Safety** - Full TypeScript coverage
-- **Security** - Helmet, CORS, input sanitization
-
-### 🔐 Security
-
-- Environment-based configuration (no hardcoded secrets)
-- Supabase Service Role for server-side operations
-- Firebase Authentication support (optional)
-- Input validation on all endpoints
-- Ownership verification for user resources
-- Security headers via Helmet
-- Configurable CORS
-
-### 📦 File Upload
-
-- Multipart form data support (Multer)
-- Image validation (type, size, count)
-- Automatic cleanup on errors
-- Supabase Storage integration
-- Public URL generation
-
-## 🛠️ Available Scripts
+## 🛠️ Scripts
 
 ```bash
-# Development
-pnpm dev              # Start dev server with hot reload
-
-# Production
-pnpm build            # Compile TypeScript to JavaScript
+pnpm dev              # Start dev server
+pnpm typecheck        # Type checking
+pnpm lint             # Linting
+pnpm build            # Production build
 pnpm start            # Run production build
-
-# Type checking
-pnpm typecheck        # Check types without emitting files
-
-# Clean
-pnpm clean            # Remove dist and node_modules
 ```
 
 ## 🗄️ Database
 
-### Supabase Tables
+### Tables
 
-- `users` - User accounts
+- `profiles` - User profiles (linked to auth.users)
 - `business` - Business/vendor information
 - `menu` - Menu items with images
-- `user_identities` - OAuth provider identities
 
-See [Database Schema](./docs/API.md#database-schema) for detailed structure.
+See [docs/DATABASE.md](./docs/DATABASE.md) for complete schema.
 
-### Setup Required
+### Setup
 
-1. Create Supabase project at https://supabase.com
-2. Run SQL migrations to create tables (see docs/API.md)
-3. Create storage bucket: `menu-images`
-4. Configure Row Level Security (RLS) policies
-5. Update `.env` with credentials
+```sql
+-- Run migrations from docs/QUICK_START.md
+-- Create storage bucket: menu-images
+-- Configure Row Level Security
+```
 
 ## 🧪 Testing
 
-### Manual Testing with cURL
-
-**Create User:**
+### Manual Testing
 
 ```bash
-curl -X POST http://localhost:4000/api/v1/users/facebook \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Juan Dela Cruz",
-    "provider": "facebook",
-    "provider_user_id": "fb_123456",
-    "provider_email": "juan@email.com"
-  }'
+curl http://localhost:4000/health
+
+# With auth token
+TOKEN="your-jwt-here"
+curl http://localhost:4000/api/v1/business \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
-**Create Business:**
+See [docs/TESTING.md](./docs/TESTING.md) for comprehensive examples.
 
-```bash
-curl -X POST http://localhost:4000/api/v1/users/{userId}/business \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Titos Taco Stand",
-    "description": "Best tacos in Manila!",
-    "longitude": 121.0244,
-    "latitude": 14.5547
-  }'
-```
+## 📋 Endpoints Summary
 
-**Upload Menu with Images:**
+### Public
 
-```bash
-curl -X POST http://localhost:4000/api/v1/business/{businessId}/menu \
-  -F "menu=Beef Taco - $5, Chicken Taco - $4" \
-  -F "images=@./image1.jpg" \
-  -F "images=@./image2.jpg"
-```
+- `GET /health` - Health check
+- `GET /api/v1/vendors` - Vendor list
 
-More examples in [docs/API.md](./docs/API.md#testing-with-curl)
+### Authenticated
 
-### Automated Testing (Future)
+- `POST /api/v1/business` - Create business
+- `GET /api/v1/business` - Get my businesses
+- `GET /api/v1/business/:id` - Get single business
+- `PUT /api/v1/business/:id` - Update business
+- `DELETE /api/v1/business/:id` - Delete business
+- `POST /api/v1/business/:id/menu` - Create menu
+- `GET /api/v1/business/:id/menu` - Get menus
+- `POST /api/v1/business/:id/menu/:id` - Update menu
+- `DELETE /api/v1/business/:id/menu/:id` - Delete menu
 
-- Jest/Vitest for unit tests
-- Supertest for integration tests
-- Test database setup
-- Mock Supabase client
-
-## 🚀 Production Deployment
-
-### Checklist
-
-- [ ] Set `NODE_ENV=production`
-- [ ] Use strong `SUPABASE_SERVICE_ROLE_KEY`
-- [ ] Configure Firebase credentials (if using auth)
-- [ ] Set specific `CORS_ORIGIN` (not `*`)
-- [ ] Enable rate limiting
-- [ ] Set up logging (Winston/Pino)
-- [ ] Configure monitoring (Sentry/New Relic)
-- [ ] Use HTTPS/SSL
-- [ ] Set up Supabase RLS policies
-- [ ] Configure storage bucket policies
-- [ ] Set up CI/CD pipeline
-- [ ] Add health check monitoring
-
-### Deployment Platforms
-
-- **Vercel** - Zero-config deployment
-- **Railway** - Simple container deployment
-- **Render** - Managed Node.js hosting
-- **AWS/GCP/Azure** - Full control with VMs or containers
-- **Fly.io** - Edge deployment
-
-## 📝 API Endpoints Overview
-
-### Users
-
-- `POST /api/v1/users/facebook` - Create/get user via Facebook
-- `GET /api/v1/users` - List all users (paginated)
-- `GET /api/v1/users/:id` - Get user by ID
-- `POST /api/v1/users/:id` - Update user
-- `DELETE /api/v1/users/:id` - Delete user
-
-### Business
-
-- `POST /api/v1/users/:userId/business` - Create business
-- `GET /api/v1/users/:userId/business` - Get user's businesses
-- `POST /api/v1/users/:userId/business/:businessId` - Update business
-- `DELETE /api/v1/users/:userId/business/:businessId` - Delete business
-
-### Menu
-
-- `POST /api/v1/business/:businessId/menu` - Create menu with images
-- `GET /api/v1/business/:businessId/menu` - Get business menus
-- `POST /api/v1/business/:businessId/menu/:menuId` - Update menu
-- `DELETE /api/v1/business/:businessId/menu/:menuId` - Delete menu
-
-### User Identities
-
-- `POST /api/v1/user-identities` - Create identity
-- `DELETE /api/v1/user-identities/:id` - Delete identity
-
-Full documentation: [docs/API.md](./docs/API.md)
+Full docs: [docs/API.md](./docs/API.md)
 
 ## 🤝 Contributing
 
 ### Code Style
 
-- Follow existing patterns (routes → controllers → services)
+- Follow existing patterns
 - Use TypeScript strict mode
 - Validate all inputs with Zod
-- Handle errors properly (throw typed errors)
-- Keep controllers thin (business logic in services)
-- Add JSDoc comments for public APIs
+- Throw typed errors
+- Keep controllers thin
+- Add JSDoc comments
 
-### Adding New Endpoints
+### Adding Features
 
 1. Create Zod schema in `validators/index.ts`
-2. Implement service logic in `services/*.service.ts`
+2. Implement service in `services/*.service.ts`
 3. Create controller in `controllers/*.controller.ts`
 4. Define routes in `routes/*.routes.ts`
-5. Mount routes in `routes/index.ts`
-6. Update API documentation
+5. Update [docs/API.md](./docs/API.md)
 
-## 📄 License
+## 📚 Resources
 
-Private - Ultimate Street Food Finder
-
-## 🔗 Related Projects
-
-- **Mobile App** - React Native app (`apps/mobile`)
-- **Shared Package** - Common types and utilities (`packages/shared`)
+- [API Documentation](./docs/API.md)
+- [Setup Guide](./docs/QUICK_START.md)
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Database Schema](./docs/DATABASE.md)
+- [Security](./docs/SECURITY.md)
+- [Testing](./docs/TESTING.md)
+- [Deployment](./docs/DEPLOYMENT.md)
+- [Authentication](./docs/AUTH.md)
 
 ---
 
