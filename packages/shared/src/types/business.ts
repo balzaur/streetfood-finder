@@ -1,9 +1,10 @@
 /**
  * Business entity - Represents a street food vendor business
+ * user_id references profiles(id)
  */
 export interface Business {
   id: string;
-  user_id: string;
+  user_id: string; // References profiles(id)
   name: string;
   description?: string | null;
   image?: string | null;

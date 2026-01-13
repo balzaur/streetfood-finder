@@ -28,15 +28,11 @@ export interface ApiErrorResponse {
  * Health check response
  */
 export interface HealthCheck {
-  ok: boolean;
-  service: string;
+  status: string;
   timestamp: string;
   environment?: string;
   supabase?: {
     connected: boolean;
-  };
-  firebase?: {
-    configured: boolean;
   };
 }
 

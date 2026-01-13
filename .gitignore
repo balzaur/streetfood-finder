@@ -84,3 +84,9 @@ web-build/
 
 # TypeScript
 *.tsbuildinfo
+
+# accidental editor artifacts
+:q
+:q.pub
+*.key
+*.pem

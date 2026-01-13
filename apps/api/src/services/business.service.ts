@@ -7,27 +7,27 @@ import type {
 } from "@ultimate-sf/shared";
 
 /**
- * Create business for a user
+ * Create business for a profile (authenticated user)
  */
 export const createBusiness = async (
-  userId: string,
+  profileId: string,
   data: CreateBusinessData
 ): Promise<Business> => {
-  // Verify user exists
-  const { data: user, error: userError } = await supabaseAdmin
-    .from("users")
+  // Verify profile exists
+  const { data: profile, error: profileError } = await supabaseAdmin
+    .from("profiles")
     .select("id")
-    .eq("id", userId)
+    .eq("id", profileId)
     .single();
 
-  if (userError || !user) {
-    throw new NotFoundError("User not found");
+  if (profileError || !profile) {
+    throw new NotFoundError("Profile not found");
   }
 
   const { data: business, error } = await supabaseAdmin
     .from("business")
     .insert({
-      user_id: userId,
+      user_id: profileId,
       name: data.name,
       description: data.description,
       image: data.image,
@@ -45,15 +45,15 @@ export const createBusiness = async (
 };
 
 /**
- * Get business(es) for a user
+ * Get business(es) for a profile
  */
-export const getBusinessesByUserId = async (
-  userId: string
+export const getBusinessesByProfileId = async (
+  profileId: string
 ): Promise<Business[]> => {
   const { data, error } = await supabaseAdmin
     .from("business")
     .select("*")
-    .eq("user_id", userId)
+    .eq("user_id", profileId)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -68,13 +68,13 @@ export const getBusinessesByUserId = async (
  */
 export const getBusinessById = async (
   businessId: string,
-  userId: string
+  profileId: string
 ): Promise<Business> => {
   const { data, error } = await supabaseAdmin
     .from("business")
     .select("*")
     .eq("id", businessId)
-    .eq("user_id", userId)
+    .eq("user_id", profileId)
     .single();
 
   if (error || !data) {
@@ -91,11 +91,11 @@ export const getBusinessById = async (
  */
 export const updateBusiness = async (
   businessId: string,
-  userId: string,
+  profileId: string,
   updates: UpdateBusinessData
 ): Promise<Business> => {
   // Verify ownership
-  await getBusinessById(businessId, userId);
+  await getBusinessById(businessId, profileId);
 
   const { data, error } = await supabaseAdmin
     .from("business")
@@ -104,7 +104,7 @@ export const updateBusiness = async (
       updated_at: new Date().toISOString(),
     })
     .eq("id", businessId)
-    .eq("user_id", userId)
+    .eq("user_id", profileId)
     .select()
     .single();
 
@@ -120,16 +120,16 @@ export const updateBusiness = async (
  */
 export const deleteBusiness = async (
   businessId: string,
-  userId: string
+  profileId: string
 ): Promise<void> => {
   // Verify ownership
-  await getBusinessById(businessId, userId);
+  await getBusinessById(businessId, profileId);
 
   const { error } = await supabaseAdmin
     .from("business")
     .delete()
     .eq("id", businessId)
-    .eq("user_id", userId);
+    .eq("user_id", profileId);
 
   if (error) {
     throw new InternalError("Failed to delete business", error);

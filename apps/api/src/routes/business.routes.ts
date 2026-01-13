@@ -1,5 +1,6 @@
 import { Router, IRouter } from "express";
 import * as businessController from "../controllers/business.controller.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
   validateBody,
   validateParams,
@@ -7,51 +8,58 @@ import {
 import {
   createBusinessSchema,
   updateBusinessSchema,
-  userIdParamSchema,
-  userBusinessParamsSchema,
+  businessIdParamSchema,
 } from "../validators/index.js";
 
 const router: IRouter = Router();
 
+// All routes require authentication
+router.use(requireAuth);
+
 /**
- * POST /api/v1/users/:userId/business
- * Create business for a user
+ * POST /api/v1/business
+ * Create business for authenticated user
  */
 router.post(
-  "/:userId/business",
-  validateParams(userIdParamSchema),
+  "/",
   validateBody(createBusinessSchema),
   businessController.createBusiness
 );
 
 /**
- * GET /api/v1/users/:userId/business
- * Get business(es) for a user
+ * GET /api/v1/business
+ * Get all businesses for authenticated user
+ */
+router.get("/", businessController.getMyBusinesses);
+
+/**
+ * GET /api/v1/business/:businessId
+ * Get single business by ID (owned by authenticated user)
  */
 router.get(
-  "/:userId/business",
-  validateParams(userIdParamSchema),
-  businessController.getBusinesses
+  "/:businessId",
+  validateParams(businessIdParamSchema),
+  businessController.getBusiness
 );
 
 /**
- * POST /api/v1/users/:userId/business/:businessId
- * Update business for a user
+ * PUT /api/v1/business/:businessId
+ * Update business (owned by authenticated user)
  */
-router.post(
-  "/:userId/business/:businessId",
-  validateParams(userBusinessParamsSchema),
+router.put(
+  "/:businessId",
+  validateParams(businessIdParamSchema),
   validateBody(updateBusinessSchema),
   businessController.updateBusiness
 );
 
 /**
- * DELETE /api/v1/users/:userId/business/:businessId
- * Delete business for a user
+ * DELETE /api/v1/business/:businessId
+ * Delete business (owned by authenticated user)
  */
 router.delete(
-  "/:userId/business/:businessId",
-  validateParams(userBusinessParamsSchema),
+  "/:businessId",
+  validateParams(businessIdParamSchema),
   businessController.deleteBusiness
 );
 

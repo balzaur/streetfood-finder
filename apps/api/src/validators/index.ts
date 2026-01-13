@@ -8,13 +8,6 @@ export const uuidParamSchema = z.object({
 });
 
 /**
- * User ID parameter validation
- */
-export const userIdParamSchema = z.object({
-  userId: z.string().uuid("Invalid user ID format"),
-});
-
-/**
  * Business ID parameter validation
  */
 export const businessIdParamSchema = z.object({
@@ -26,14 +19,6 @@ export const businessIdParamSchema = z.object({
  */
 export const menuIdParamSchema = z.object({
   menuId: z.string().uuid("Invalid menu ID format"),
-});
-
-/**
- * Combined user + business params
- */
-export const userBusinessParamsSchema = z.object({
-  userId: z.string().uuid("Invalid user ID format"),
-  businessId: z.string().uuid("Invalid business ID format"),
 });
 
 /**
@@ -62,27 +47,6 @@ export const paginationQuerySchema = z.object({
     .refine((val) => val >= 0, {
       message: "Offset must be non-negative",
     }),
-});
-
-/**
- * Facebook login request validation
- */
-export const facebookLoginSchema = z.object({
-  name: z.string().min(1, "Name is required").max(255),
-  provider: z.literal("facebook"),
-  provider_user_id: z.string().min(1, "Provider user ID is required"),
-  provider_email: z
-    .string()
-    .email("Invalid email format")
-    .optional()
-    .nullable(),
-});
-
-/**
- * Update user request validation
- */
-export const updateUserSchema = z.object({
-  name: z.string().min(1, "Name is required").max(255),
 });
 
 /**
@@ -133,17 +97,4 @@ export const createMenuSchema = z.object({
  */
 export const updateMenuSchema = z.object({
   menu: z.string().min(1, "Menu text is required").optional(),
-});
-
-/**
- * Create user identity request validation
- */
-export const createUserIdentitySchema = z.object({
-  user_id: z.string().uuid("Invalid user ID format"),
-  provider_user_id: z.string().min(1, "Provider user ID is required"),
-  provider_email: z
-    .string()
-    .email("Invalid email format")
-    .optional()
-    .nullable(),
 });

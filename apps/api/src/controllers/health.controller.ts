@@ -3,8 +3,7 @@ import type { HealthCheck } from "@ultimate-sf/shared";
 
 export const getHealth = (_req: Request, res: Response) => {
   const response: HealthCheck = {
-    ok: true,
-    service: "ultimate-street-food-finder-api",
+    status: "ok",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
   };

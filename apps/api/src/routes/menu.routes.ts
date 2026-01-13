@@ -1,5 +1,6 @@
 import { Router, IRouter } from "express";
 import * as menuController from "../controllers/menu.controller.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 import { validateParams } from "../middlewares/validate.middleware.js";
 import {
   businessIdParamSchema,
@@ -7,6 +8,9 @@ import {
 } from "../validators/index.js";
 
 const router: IRouter = Router();
+
+// All routes require authentication
+router.use(requireAuth);
 
 /**
  * POST /api/v1/business/:businessId/menu

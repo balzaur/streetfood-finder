@@ -30,16 +30,13 @@ cp .env.example .env
 Edit `.env` and update:
 
 ```env
-SUPABASE_SERVICE_ROLE_KEY=your-actual-service-role-key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_JWT_SECRET=your-jwt-secret
 ```
 
-Optional Firebase configuration for authentication:
-
-```env
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_CLIENT_EMAIL=your-service-account-email
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-```
+**Note:** Firebase is NO LONGER USED. All authentication is handled by Supabase Auth.
 
 ### Run Development Server
 
@@ -75,7 +72,7 @@ Comprehensive API documentation is available in [docs/API.md](./docs/API.md)
 **Quick Links:**
 
 - [Endpoints](./docs/API.md#endpoints)
-- [Authentication](./docs/API.md#authentication)
+- [Authentication](./docs/AUTH.md) - **NEW: Supabase Auth Flow**
 - [Error Codes](./docs/API.md#error-codes)
 - [Testing with cURL](./docs/API.md#testing-with-curl)
 - [Database Schema](./docs/API.md#database-schema)
@@ -84,6 +81,7 @@ Comprehensive API documentation is available in [docs/API.md](./docs/API.md)
 
 Backend architecture and technical documentation for onboarding engineers:
 
+- **[Authentication Architecture](./docs/AUTH.md)** - **NEW: How Supabase Auth works, JWT verification, profile management**
 - **[Backend Database Architecture](./docs/backend-database-architecture.md)** - Database design philosophy, table relationships, security considerations, and scalability approach
 - **[Backend Tech Stack & Libraries](./docs/backend-tech-stack.md)** - Detailed explanation of technologies, libraries, folder structure, and architectural decisions
 
@@ -94,8 +92,14 @@ Backend architecture and technical documentation for onboarding engineers:
 ### Clean Architecture Pattern
 
 ```
-Routes → Middleware → Controllers → Services → Database
+HTTP Request → Auth Middleware → Routes → Controllers → Services → Supabase
 ```
+
+**Key Changes:**
+
+- **Auth Middleware**: Verifies Supabase JWTs on all protected routes
+- **No Firebase**: Firebase Admin SDK completely removed
+- **Profile Management**: Backend ensures profiles exist for authenticated users
 
 ### Project Structure
 

@@ -4,12 +4,8 @@ import helmet from "helmet";
 import { config } from "./config/env.js";
 import routes from "./routes/index.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
-import { initializeFirebase } from "./lib/firebase.js";
 
 const app: Application = express();
-
-// Initialize Firebase (optional)
-initializeFirebase();
 
 // Security middleware
 app.use(helmet());

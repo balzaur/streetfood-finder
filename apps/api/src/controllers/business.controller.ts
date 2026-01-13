@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { asyncHandler } from "../middlewares/async-handler.js";
+import { AuthRequest } from "../middlewares/auth.middleware.js";
 import {
   sendSuccess,
   sendCreated,
@@ -8,41 +9,52 @@ import {
 import * as businessService from "../services/business.service.js";
 
 /**
- * POST /api/v1/users/:userId/business
- * Create business for a user
+ * POST /api/v1/business
+ * Create business for authenticated user
  */
-export const createBusiness = asyncHandler(
-  async (req: Request, res: Response) => {
-    const business = await businessService.createBusiness(
-      req.params.userId,
-      req.body
-    );
+export const createBusiness = asyncHandler<AuthRequest>(
+  async (req: AuthRequest, res: Response) => {
+    const business = await businessService.createBusiness(req.userId, req.body);
     sendCreated(res, business);
   }
 );
 
 /**
- * GET /api/v1/users/:userId/business
- * Get business(es) for a user
+ * GET /api/v1/business
+ * Get all businesses for authenticated user
  */
-export const getBusinesses = asyncHandler(
-  async (req: Request, res: Response) => {
-    const businesses = await businessService.getBusinessesByUserId(
-      req.params.userId
+export const getMyBusinesses = asyncHandler<AuthRequest>(
+  async (req: AuthRequest, res: Response) => {
+    const businesses = await businessService.getBusinessesByProfileId(
+      req.userId
     );
     sendSuccess(res, businesses);
   }
 );
 
 /**
- * POST /api/v1/users/:userId/business/:businessId
- * Update business for a user
+ * GET /api/v1/business/:businessId
+ * Get single business by ID (must be owned by authenticated user)
  */
-export const updateBusiness = asyncHandler(
-  async (req: Request, res: Response) => {
+export const getBusiness = asyncHandler<AuthRequest>(
+  async (req: AuthRequest, res: Response) => {
+    const business = await businessService.getBusinessById(
+      req.params.businessId,
+      req.userId
+    );
+    sendSuccess(res, business);
+  }
+);
+
+/**
+ * PUT /api/v1/business/:businessId
+ * Update business (must be owned by authenticated user)
+ */
+export const updateBusiness = asyncHandler<AuthRequest>(
+  async (req: AuthRequest, res: Response) => {
     const business = await businessService.updateBusiness(
       req.params.businessId,
-      req.params.userId,
+      req.userId,
       req.body
     );
     sendSuccess(res, business);
@@ -50,15 +62,12 @@ export const updateBusiness = asyncHandler(
 );
 
 /**
- * DELETE /api/v1/users/:userId/business/:businessId
- * Delete business for a user
+ * DELETE /api/v1/business/:businessId
+ * Delete business (must be owned by authenticated user)
  */
-export const deleteBusiness = asyncHandler(
-  async (req: Request, res: Response) => {
-    await businessService.deleteBusiness(
-      req.params.businessId,
-      req.params.userId
-    );
+export const deleteBusiness = asyncHandler<AuthRequest>(
+  async (req: AuthRequest, res: Response) => {
+    await businessService.deleteBusiness(req.params.businessId, req.userId);
     sendNoContent(res);
   }
 );
